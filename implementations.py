@@ -91,7 +91,7 @@ def ridge_regression(y, tx, lambda_):
     # Calculate loss
     mse = MeanSquaredError.calculate(y, tx, weights)
     loss = mse + lambda_ * np.sum(weights ** 2)
-    return (w, loss)
+    return (weights, loss)
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """...
