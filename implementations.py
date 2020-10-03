@@ -128,7 +128,8 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     return (weights, loss)
 
 # KEEP IN MIND: Optinal arguments might have to be removed 
-#    as they are not in the description of the project 
+#    as they are not in the description of the project.
+#    Therefore use of them is discouraged :(
 def least_squares_SGD(y, tx, initial_w, max_iters, gamma, batch_size=32, num_batches=1):
     """Calculates the least squares solution using stochastic gradient descent.
     Returns tuple (parameters, loss)
