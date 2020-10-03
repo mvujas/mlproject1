@@ -1,10 +1,9 @@
 import numpy as np
 
 # TODO: Adjust one_hot to work with multicolumn data and decide on output format in such case
-def one_hot(x):
+def one_hot(x, depth=None):
     """Transforms input into one hot format.
     All values of the input array are expected to be >= 0.
-    Number of classes is equal by the value of maximum element + 1.
     Note that number of classes does not depend on number of distinctive values,
         so it is recommended to map interval to [0, N] such that every value of 
         interval is present at least once before calling this function.
@@ -13,11 +12,39 @@ def one_hot(x):
     ----------
     x : np.ndarray
         Either 1D or (N, 1) array of positive integers
+    depth : int or None
+        Indicates minimal number of classes. 
+            If value is None, the number of classes will be equal to the value of maximum element of x + 1.
+            Otherwise it will be maximum between the value of maximum element of x + 1 and depth
     """
     if x.ndim == 2:
         x = x[:, 0]
-    depth = np.max(x) + 1
+    min_depth = np.max(x) + 1
+    if depth == None:
+        depth = min_depth
+    else:
+        depth = max(min_depth, depth)
     return np.eye(depth)[x]
+
+# TODO: Implement more efficient way to do mapping if this proves too slow
+def map_values(x, mapping, default=0):
+    """Maps values from the given array using mapping rules given in the dictionary
+        
+    Parameters
+    ----------
+    x : np.ndarray
+        Array whose values are to be mapped
+    mapping : dict
+        Dictionary containing value to value mapping rules
+    default
+        Default mapping value for cells whose value is not specified in the mapping rule
+    """
+    condlist = []
+    choicelist = []
+    for key, value in mapping.items():
+        condlist.append(x == key)
+        choicelist.append(value)
+    return np.select(condlist, choicelist, default=default)
 
 def standardize(x):
     """Standardizes values of each column in the given matrix (2D array)
