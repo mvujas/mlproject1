@@ -17,6 +17,8 @@ def one_hot(x, depth=None):
             If value is None, the number of classes will be equal to the value of maximum element of x + 1.
             Otherwise it will be maximum between the value of maximum element of x + 1 and depth
     """
+    if type(x) != np.int32:
+        x = x.astype(np.int32)
     if x.ndim == 2:
         x = x[:, 0]
     min_depth = np.max(x) + 1
@@ -86,7 +88,28 @@ def prepend_bias_column(x):
     Parameters
     ----------
     x : np.ndarray
+        Matrix to which a bias column is to be added
     """
     data_size = x.shape[0]
     bias_column = np.ones((data_size, 1))
     return np.append(bias_column, x, axis=1)
+
+def nullify_missing_values(x, missing_field_value):
+    """Set value of all fields in the given ndarray 
+        whose value is equal to missing_field_value to 0 
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Array whose missing fields are to be nullified
+    missing_field_value
+        Default value of fields that are missing
+    """
+    condition = x != missing_field_value
+    return np.where(condition, x, 0)
+
+def apply_transformation(x, column_idx, transformation):
+    columns = x[:, column_idx]
+    x_without_columns = np.delete(x, column_idx, axis=1)
+    columns = transformation(columns)
+    return np.append(x_without_columns, columns, axis=1)
