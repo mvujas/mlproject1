@@ -1,6 +1,8 @@
 CLASS_B = -1
 CLASS_S = 1
 
+CLASS_TO_BE_RETRIEVED = CLASS_S
+
 CLASS_MAPPING = {
     'b': CLASS_B,
     's': CLASS_S
