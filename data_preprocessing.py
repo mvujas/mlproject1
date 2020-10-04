@@ -1,6 +1,5 @@
 import numpy as np
 
-
 # TODO: Adjust one_hot to work with multicolumn data and decide on output format in such case
 def one_hot(x, depth=None):
     """Transforms input into one hot format.
@@ -120,3 +119,87 @@ def apply_transformation(x, column_idx, transformation):
     x_without_columns = np.delete(x, column_idx, axis=1)
     columns = transformation(columns)
     return np.append(x_without_columns, columns, axis=1)
+
+
+def shuffle(y, x):
+    """Randomly shuffles data.
+        All the provided data have to be of same size
+
+    Parameters
+    ----------
+    y : np.ndarray
+        Labels
+    x : np.ndarray
+        Features
+    """
+    data_size = y.size
+    if data_size != x.size:
+        raise ValueError(
+            'Features and labels have to have the same size')
+    
+    shuffle_indices = np.random.permutation(np.arange(data_size))
+    shuffled_y = y[shuffle_indices]
+    shuffled_x = x[shuffle_indices]
+    return shuffled_y, shuffled_x
+
+
+def stratify_sampling(y, x, number_of_folds, shuffle=False):
+    """Splits data points in folds of relatively equal size 
+        (can sligtly differ if number of data points is not dividable by number of folds)
+        such that each fold has equal number of instances of same class
+
+    Parameters
+    ----------
+    y : np.ndarray
+        Labels
+    x : np.ndarray
+        Features
+    number_of_folds : int
+        Number of folds data point should be split into
+    shuffle : bool
+        Indicate whether data should be shuffled before being stratified
+    """
+    def sizes_of_folds(size, number_of_folds):
+        """Helper function that returns where data should be split and whose output
+            can be fed directly into np.split function as the second argument
+
+        Parameters
+        ----------
+        size : int
+            Size of the collection
+        number_of_folds : int
+            Number of folds collection should be split into
+        """
+        min_fold_size = round(size / number_of_folds)
+        folds = []
+        last = 0
+        for i in range(number_of_folds - 1):
+            last = last + min_fold_size
+            folds.append(last)
+        print(folds, size)
+        return folds
+
+    if shuffle:
+        y, x = shuffle(y, x)
+
+    classes = np.unique(y)
+    # Divide indexes of instances of each class in respective arrays
+    class_idx = [np.where(y == class_val) for class_val in classes]
+    class_idx_fold = []
+    for single_class_idx in class_idx:
+        # For each class split their indexes into smaller folds
+        idx = single_class_idx[0]
+        fold_slices = sizes_of_folds(idx.size, number_of_folds)
+        idx_folds = np.split(idx, fold_slices)
+        class_idx_fold.append(idx_folds)
+
+    y_folds = []
+    x_folds = []
+    for i in range(number_of_folds):
+        # Take instances of each class
+        new_x_fold = np.concatenate([x[class_folds[i]] for class_folds in class_idx_fold])
+        new_y_fold = np.concatenate([y[class_folds[i]] for class_folds in class_idx_fold])
+        x_folds.append(new_x_fold)
+        y_folds.append(new_y_fold)
+
+    return y_folds, x_folds
