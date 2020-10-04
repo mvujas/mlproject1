@@ -1,5 +1,6 @@
 import numpy as np
 
+
 # TODO: Adjust one_hot to work with multicolumn data and decide on output format in such case
 def one_hot(x, depth=None):
     """Transforms input into one hot format.
@@ -28,6 +29,7 @@ def one_hot(x, depth=None):
         depth = max(min_depth, depth)
     return np.eye(depth)[x]
 
+
 # TODO: Implement more efficient way to do mapping if this proves too slow
 def map_values(x, mapping, default=0):
     """Maps values from the given array using mapping rules given in the dictionary
@@ -48,6 +50,7 @@ def map_values(x, mapping, default=0):
         choicelist.append(value)
     return np.select(condlist, choicelist, default=default)
 
+
 def standardize(x):
     """Standardizes values of each column in the given matrix (2D array)
 
@@ -60,8 +63,9 @@ def standardize(x):
     std_dev = np.std(x, axis=0)
     # In order to avoid division by 0, columns whose value is 0 are set to 1.
     #   This will result in standardized value of all cells in the given column being 0
-    std_dev = np.where(std_dev != 0, std_dev, np.ones(std_dev.shape))
+    std_dev[np.where(std_dev == 0)] = 1
     return (x - mean) / std_dev
+
 
 def normalize(x):
     """Scales values of each column in the given matrix (2D array) 
@@ -77,8 +81,9 @@ def normalize(x):
     dif = max_els - min_els
     # In order to avoid division by 0, columns whose value is 0 are set to 1.
     #   This will result in standardized value of all cells in the given column being 0
-    dif = np.where(dif != 0, dif, np.ones(dif.shape))
+    dif[np.where(dif == 0)] = 1
     return (x - min_els) / dif
+
 
 def prepend_bias_column(x):
     """Adds an additional column whose all values are 1 as 
@@ -94,6 +99,7 @@ def prepend_bias_column(x):
     bias_column = np.ones((data_size, 1))
     return np.append(bias_column, x, axis=1)
 
+
 def nullify_missing_values(x, missing_field_matrix):
     """Set value of all fields in the given ndarray 
         whose corresponding value in missing_field_matrix is True to 0 
@@ -107,6 +113,7 @@ def nullify_missing_values(x, missing_field_matrix):
         whose values corresponds to whether a field in the same position in x is missing  
     """
     return np.where(missing_field_matrix, x, 0)
+
 
 def apply_transformation(x, column_idx, transformation):
     columns = x[:, column_idx]
