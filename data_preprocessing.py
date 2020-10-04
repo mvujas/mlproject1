@@ -94,19 +94,19 @@ def prepend_bias_column(x):
     bias_column = np.ones((data_size, 1))
     return np.append(bias_column, x, axis=1)
 
-def nullify_missing_values(x, missing_field_value):
+def nullify_missing_values(x, missing_field_matrix):
     """Set value of all fields in the given ndarray 
-        whose value is equal to missing_field_value to 0 
+        whose corresponding value in missing_field_matrix is True to 0 
 
     Parameters
     ----------
     x : np.ndarray
-        Array whose missing fields are to be nullified
-    missing_field_value
-        Default value of fields that are missing
+        Ndarray whose missing fields are to be nulllified
+    missing_field_matrix : np.ndarray
+        Ndarray of bools of shape equal to the shape of x 
+        whose values corresponds to whether a field in the same position in x is missing  
     """
-    condition = x != missing_field_value
-    return np.where(condition, x, 0)
+    return np.where(missing_field_matrix, x, 0)
 
 def apply_transformation(x, column_idx, transformation):
     columns = x[:, column_idx]
