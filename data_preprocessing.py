@@ -176,7 +176,6 @@ def stratify_sampling(y, x, number_of_folds, shuffle=False):
         for i in range(number_of_folds - 1):
             last = last + min_fold_size
             folds.append(last)
-        print(folds, size)
         return folds
 
     if shuffle:
