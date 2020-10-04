@@ -1,9 +1,14 @@
 import csv
 import numpy as np
+import class_config
 
 
 def load_csv_data(data_path, sub_sample=False):
     """Loads data and returns y (class labels), tX (features) and ids (event ids)"""
+    # Read column names as they may come handy during data preprocessing
+    with open(data_path, 'r') as f:
+        column_names = f.readline().strip().split(',')
+    # Load data
     y = np.genfromtxt(data_path, delimiter=",", skip_header=1, dtype=str, usecols=1)
     x = np.genfromtxt(data_path, delimiter=",", skip_header=1)
     ids = x[:, 0].astype(np.int)
@@ -11,7 +16,7 @@ def load_csv_data(data_path, sub_sample=False):
 
     # convert class labels from strings to binary (-1,1)
     yb = np.ones(len(y))
-    yb[np.where(y=='b')] = -1
+    yb[np.where(y=='b')] = class_config.CLASS_B
     
     # sub-sample
     if sub_sample:
@@ -19,7 +24,7 @@ def load_csv_data(data_path, sub_sample=False):
         input_data = input_data[::50]
         ids = ids[::50]
 
-    return yb, input_data, ids
+    return yb, input_data, ids, column_names
 
 
 def create_csv_submission(ids, y_pred, name):
