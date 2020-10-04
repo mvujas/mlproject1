@@ -109,17 +109,20 @@ def nullify_missing_values(x, missing_field_matrix):
         Ndarray whose missing fields are to be nulllified
     missing_field_matrix : np.ndarray
         Ndarray of bools of shape equal to the shape of x 
-        whose values corresponds to whether a field in the same position in x is missing  
+        whose values corresponds to whether a field in the same position in x is missing
     """
-    return np.where(missing_field_matrix, x, 0)
+    return np.where(missing_field_matrix, 0, x)
 
 
 def apply_transformation(x, column_idx, transformation):
     columns = x[:, column_idx]
-    x_without_columns = np.delete(x, column_idx, axis=1)
-    columns = transformation(columns)
-    return np.append(x_without_columns, columns, axis=1)
-
+    new_columns = transformation(columns)
+    if columns.shape != new_columns.shape:
+        x_without_columns = np.delete(x, column_idx, axis=1)
+        x = np.append(x_without_columns, new_columns, axis=1)
+    else:
+        x[:, column_idx] = new_columns
+    return x
 
 def shuffle(y, x):
     """Randomly shuffles data.
