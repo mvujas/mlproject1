@@ -114,12 +114,33 @@ def nullify_missing_values(x, missing_field_matrix):
     return np.where(missing_field_matrix, 0, x)
 
 
-def apply_transformation(x, column_idx, transformation):
+def build_poly(x, degree):
+  """polynomial basis functions for input data x, for j=1 up to j=degree."""
+  if x.ndim == 1:
+    x = x[:, np.newaxis]
+  extended_feature_matrix = np.copy(x)
+
+  for i in range(1, degree):
+    extended_feature_matrix = extended_feature_matrix * x
+    extended_feature_matrix = np.append(
+        x, 
+        extended_feature_matrix, 
+        axis=1)
+
+  return extended_feature_matrix
+
+
+def apply_transformation(x, column_idx, transformation, column_to_index_mapping=None):
     columns = x[:, column_idx]
     new_columns = transformation(columns)
     if columns.shape != new_columns.shape:
         x_without_columns = np.delete(x, column_idx, axis=1)
         x = np.append(x_without_columns, new_columns, axis=1)
+        if column_to_index_mapping is not None:
+            for key in column_to_index_mapping:
+                index = column_to_index_mapping[key]
+                lower_indexes = np.sum(np.less(column_idx, index))
+                column_to_index_mapping[key] -= lower_indexes
     else:
         x[:, column_idx] = new_columns
     return x
