@@ -218,7 +218,6 @@ def stratify_sampling(y, x, number_of_folds, shuffle=False):
 
     y_folds = []
     x_folds = []
-    print(class_idx_fold, end='\n'*5)
     for i in range(number_of_folds):
         # Take instances of each class
         new_x_fold = np.concatenate([x[class_folds[i]] for class_folds in class_idx_fold])
