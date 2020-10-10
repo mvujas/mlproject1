@@ -314,7 +314,47 @@ def reg_logistic_regression_history(y, tx, lambda_, initial_w, max_iters, gamma)
 
         loss_h.append(logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights)
 
-    # calculate loss
-    loss = logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights
-
     return (weights, loss_h)
+
+
+def reg_logistic_regression_sgd(y, tx, lambda_, initial_w, n_epochs, batch_size, gamma, history=False):
+    """...
+    Train weights minimizing logistic loss function with L2 regularizer using GD:
+    L(w) = 1/N \sum_{i=1}^N [y_i \log s(tx_i^T w) + (1 - y_i) \log(1 - s(tx_i^T w))] + lambda_ * w^Tw -> min_w
+
+    Returns tuple (parameters, loss)
+
+    Parameters
+    ----------
+    y : numpy.ndarray
+         Labels
+    tx : numpy.ndarray
+         Features
+    lambda_ : float
+         Trade-off parameter
+    initial_w : numpy.ndarray
+         Initial parameters of the model
+    max_iters : int
+        number of passes over the data
+    gamma : float
+         Learning rate
+    history : bool
+         return weights history if set to True
+    """
+    weights = initial_w
+    loss_h = [logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights]
+
+    for iteration in range(n_epochs):
+        # Stochastic Gradient Descent step
+        batches = batch_iter(y, tx, batch_size=batch_size, num_batches=len(y) // batch_size)
+        for y_batch, tx_batch in batches:
+            # calculate gradient
+            g = logistic_regression_grad(y_batch, tx_batch, weights)
+            # add L2 regularizer gradient (lambda_ * w^Tw)
+            g += 2 * lambda_ * weights
+            # make a GD step
+            weights -= gamma * g
+
+        loss_h.append(logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights)
+
+    return (weights, loss_h if history else loss_h[-1])

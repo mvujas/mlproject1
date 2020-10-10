@@ -66,6 +66,23 @@ def standardize(x):
     return (x - mean) / std_dev
 
 
+def standardize_with_nans(x):
+    """Standardizes values of each column in the given matrix (2D array) handling nans
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Matrix to be standardized
+    """
+
+    for i in range(x.shape[1]):
+        mask = ~np.isnan(x[:, i])
+        std = max(1e-6, np.std(x[mask, i], ddof=1))
+        x[mask, i] = (x[mask, i] - np.mean(x[mask, i])) / std
+
+    return x
+
+
 def normalize(x):
     """Scales values of each column in the given matrix (2D array) 
         to range [0, 1] using Min-Max feature scaling
@@ -115,19 +132,19 @@ def nullify_missing_values(x, missing_field_matrix):
 
 
 def build_poly(x, degree):
-  """polynomial basis functions for input data x, for j=1 up to j=degree."""
-  if x.ndim == 1:
-    x = x[:, np.newaxis]
-  extended_feature_matrix = np.copy(x)
+    """polynomial basis functions for input data x, for j=1 up to j=degree."""
+    if x.ndim == 1:
+        x = x[:, np.newaxis]
+    extended_feature_matrix = np.copy(x)
 
-  for i in range(1, degree):
-    extended_feature_matrix = extended_feature_matrix * x
-    extended_feature_matrix = np.append(
-        x, 
-        extended_feature_matrix, 
-        axis=1)
+    for i in range(1, degree):
+        extended_feature_matrix = extended_feature_matrix * x
+        extended_feature_matrix = np.append(
+            x,
+            extended_feature_matrix, 
+            axis=1)
 
-  return extended_feature_matrix
+    return extended_feature_matrix
 
 
 def apply_transformation(x, column_idx, transformation, column_to_index_mapping=None):
@@ -160,7 +177,7 @@ def shuffle_samples(y, x):
     if data_size != x.shape[0]:
         raise ValueError(
             'Features and labels have to have the same size')
-    
+
     shuffle_indices = np.random.permutation(np.arange(data_size))
     shuffled_y = y[shuffle_indices]
     shuffled_x = x[shuffle_indices]
