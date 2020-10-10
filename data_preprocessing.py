@@ -145,7 +145,7 @@ def apply_transformation(x, column_idx, transformation, column_to_index_mapping=
         x[:, column_idx] = new_columns
     return x
 
-def shuffle(y, x):
+def shuffle_samples(y, x):
     """Randomly shuffles data.
         All the provided data have to be of same size
 
@@ -156,8 +156,8 @@ def shuffle(y, x):
     x : np.ndarray
         Features
     """
-    data_size = y.size
-    if data_size != x.size:
+    data_size = y.shape[0]
+    if data_size != x.shape[0]:
         raise ValueError(
             'Features and labels have to have the same size')
     
@@ -203,7 +203,7 @@ def stratify_sampling(y, x, number_of_folds, shuffle=False):
         return folds
 
     if shuffle:
-        y, x = shuffle(y, x)
+        y, x = shuffle_samples(y, x)
 
     classes = np.unique(y)
     # Divide indexes of instances of each class in respective arrays
