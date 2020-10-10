@@ -237,7 +237,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     loss = logistic_regression_loss(y, tx, weights)
     return (weights, loss)
 
-def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma, history=False):
+def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """...
     Train weights minimizing logistic loss function with L2 regularizer using GD:
     L(w) = 1/N \sum_{i=1}^N [y_i \log s(tx_i^T w) + (1 - y_i) \log(1 - s(tx_i^T w))] + lambda_ * w^Tw -> min_w
@@ -262,8 +262,6 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma, history
          return weights history if set to True
     """
     weights = initial_w
-    if history:
-        loss_h = [logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights]
 
     for i in range(max_iters):
         # calculate gradient
@@ -273,13 +271,50 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma, history
         # make a GD step
         weights -= gamma * g
 
-        if history:
-            loss_h.append(logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights)
+    # calculate loss
+    loss = logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights
+
+    return (weights, loss)
+
+
+def reg_logistic_regression_history(y, tx, lambda_, initial_w, max_iters, gamma):
+    """...
+    Train weights minimizing logistic loss function with L2 regularizer using GD:
+    L(w) = 1/N \sum_{i=1}^N [y_i \log s(tx_i^T w) + (1 - y_i) \log(1 - s(tx_i^T w))] + lambda_ * w^Tw -> min_w
+
+    Returns tuple (parameters, loss)
+
+    Parameters
+    ----------
+    y : numpy.ndarray
+         Labels
+    tx : numpy.ndarray
+         Features
+    lambda_ : float
+         Trade-off parameter
+    initial_w : numpy.ndarray
+         Initial parameters of the model
+    max_iters : int
+         Maximum number of iterations
+    gamma : float
+         Learning rate
+    history : bool
+         return weights history if set to True
+    """
+    weights = initial_w
+    loss_h = [logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights]
+
+    for i in range(max_iters):
+        # calculate gradient
+        g = logistic_regression_grad(y, tx, weights)
+        # add L2 regularizer gradient (lambda_ * w^Tw)
+        g += 2 * lambda_ * weights
+        # make a GD step
+        weights -= gamma * g
+
+        loss_h.append(logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights)
 
     # calculate loss
     loss = logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights
 
-    if history:
-        return (weights, loss_h)
-
-    return (weights, loss)
+    return (weights, loss_h)
