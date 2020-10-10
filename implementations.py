@@ -1,4 +1,6 @@
 import numpy as np
+from scipy.special import expit
+
 
 class MeanSquaredError:
     """Class that implements static methods that calculate
@@ -57,10 +59,10 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
     batch_size : int
           Number of datapoints in each batch
     num_batches : int
-          Positive integer indicating a number of batches the data to be split into 
+          Positive integer indicating a number of batches the data to be split into
           [effective value: min(num_batches, math.ceil(len(y) / batch_size))]
     shuffle : bool
-          Should data be randomly shuffled before being split into batches 
+          Should data be randomly shuffled before being split into batches
     """
     data_size = len(y)
 
@@ -71,7 +73,7 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
         shuffle_indices = np.random.permutation(np.arange(data_size))
         shuffled_y = y[shuffle_indices]
         shuffled_tx = tx[shuffle_indices]
-    
+
     for batch_num in range(num_batches):
         start_index = batch_num * batch_size
         end_index = min((batch_num + 1) * batch_size, data_size)
@@ -101,6 +103,7 @@ def least_squares(y, tx):
     loss = MeanSquaredError.calculate(y, tx, weights)
     return (weights, loss)
 
+
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     """Calculates the least squares solution using gradient descent.
     Returns tuple (parameters, loss)
@@ -127,7 +130,7 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     loss = MeanSquaredError.calculate(y, tx, weights)
     return (weights, loss)
 
-# KEEP IN MIND: Optinal arguments might have to be removed 
+# KEEP IN MIND: Optinal arguments might have to be removed
 #    as they are not in the description of the project.
 #    Therefore use of them is discouraged :(
 def least_squares_SGD(y, tx, initial_w, max_iters, gamma, batch_size=32, num_batches=1):
@@ -145,23 +148,25 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma, batch_size=32, num_bat
     max_iters : int
          Maximum number of iterations
     gamma : float
-         Learning rate 
+         Learning rate
     batch_size : int
           Number of datapoints in each batch
     num_batches : int
           Number of batches per each iteration of SGD algorithm
     """
     weights = initial_w
+
+    # TODO: max_iters defines number of steps, not epochs
     for iteration in range(max_iters):
         # Stochastic Gradient Descent step
-        batches = batch_iter(y, tx, 
-          batch_size=batch_size, num_batches=num_batches)
+        batches = batch_iter(y, tx, batch_size=batch_size, num_batches=num_batches)
         for y_batch, tx_batch in batches:
             gradient = MeanSquaredError.gradient(y_batch, tx_batch, weights)
             weights = weights - gamma * gradient
     # Calculate loss
     loss = MeanSquaredError.calculate(y, tx, weights)
     return (weights, loss)
+
 
 def ridge_regression(y, tx, lambda_):
     """Implements ridge regression.
@@ -188,8 +193,24 @@ def ridge_regression(y, tx, lambda_):
     loss = mse + lambda_ * np.sum(weights ** 2)
     return (weights, loss)
 
+
+def logistic_regression_grad(y, tx, weights):
+    p = expit(tx @ weights)
+    g = (p - y)[:, None] * tx
+    return g.mean(0)
+
+
+def logistic_regression_loss(y, tx, weights):
+    t = 2 * y - 1
+    loss = np.log1p(np.exp(-t * (tx @ weights)))
+    return loss.mean()
+
+
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """...
+    Train weights minimizing logistic loss function using GD:
+    L(w) = 1/N \sum_{i=1}^N [y_i \log s(tx_i^T w) + (1 - y_i) \log(1 - s(tx_i^T w))] -> min_w
+
     Returns tuple (parameters, loss)
 
     Parameters
@@ -203,13 +224,24 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     max_iters : int
          Maximum number of iterations
     gamma : float
-         Learning rate 
+         Learning rate
     """
-    # TODO: implement and document what the function does
-    raise NotImplementedError()
 
-def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
+    weights = initial_w
+    for i in range(max_iters):
+        # calculate gradient
+        g = logistic_regression_grad(y, tx, weights)
+        # make a GD step
+        weights -= gamma * g
+    # Calculate loss
+    loss = logistic_regression_loss(y, tx, weights)
+    return (weights, loss)
+
+def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma, history=False):
     """...
+    Train weights minimizing logistic loss function with L2 regularizer using GD:
+    L(w) = 1/N \sum_{i=1}^N [y_i \log s(tx_i^T w) + (1 - y_i) \log(1 - s(tx_i^T w))] + lambda_ * w^Tw -> min_w
+
     Returns tuple (parameters, loss)
 
     Parameters
@@ -225,7 +257,29 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     max_iters : int
          Maximum number of iterations
     gamma : float
-         Learning rate 
+         Learning rate
+    history : bool
+         return weights history if set to True
     """
-    # TODO: implement and document what the function does
-    raise NotImplementedError()
+    weights = initial_w
+    if history:
+        loss_h = [logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights]
+
+    for i in range(max_iters):
+        # calculate gradient
+        g = logistic_regression_grad(y, tx, weights)
+        # add L2 regularizer gradient (lambda_ * w^Tw)
+        g += 2 * lambda_ * weights
+        # make a GD step
+        weights -= gamma * g
+
+        if history:
+            loss_h.append(logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights)
+
+    # calculate loss
+    loss = logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights
+
+    if history:
+        return (weights, loss_h)
+
+    return (weights, loss)
