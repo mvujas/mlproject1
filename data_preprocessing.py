@@ -131,15 +131,17 @@ def nullify_missing_values(x, missing_field_matrix):
     return np.where(missing_field_matrix, 0, x)
 
 
-def build_poly(x, degree):
+def build_poly(x, column_idx, degree):
     """polynomial basis functions for input data x, for j=1 up to j=degree."""
     if x.ndim == 1:
         x = x[:, np.newaxis]
+        
+    columns = x[:, column_idx]
 
-    extended_feature_matrix = np.copy(x)
-    extensions = [np.copy(extended_feature_matrix)]
+    extended_feature_matrix = np.copy(columns)
+    extensions = [np.copy(x)]
     for i in range(1, degree):
-        extended_feature_matrix = extended_feature_matrix * x
+        extended_feature_matrix = extended_feature_matrix * columns
         extensions.append(np.copy(extended_feature_matrix))
 
     return np.concatenate(extensions, 1)
