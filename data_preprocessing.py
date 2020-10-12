@@ -130,6 +130,42 @@ def nullify_missing_values(x, missing_field_matrix):
     """
     return np.where(missing_field_matrix, 0, x)
 
+def mean_missing_values(x, missing_field_matrix):
+    """Set value of all fields in the given ndarray 
+        whose corresponding value in missing_field_matrix is True to the mean value of 
+        the corresponding column
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Ndarray whose missing fields are to be nulllified
+    missing_field_matrix : np.ndarray
+        Ndarray of bools of shape equal to the shape of x 
+        whose values corresponds to whether a field in the same position in x is missing
+    """
+    for col in range(missing_field_matrix.shape[1]):
+        tofill = x[:, col][~missing_field_matrix[:, col]].mean()
+        x[:, col] = np.where(missing_field_matrix[:, col], tofill, x[:, col])
+    return x
+
+def median_missing_values(x, missing_field_matrix):
+    """Set value of all fields in the given ndarray 
+        whose corresponding value in missing_field_matrix is True to the median value of 
+        the corresponding column
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Ndarray whose missing fields are to be nulllified
+    missing_field_matrix : np.ndarray
+        Ndarray of bools of shape equal to the shape of x 
+        whose values corresponds to whether a field in the same position in x is missing
+    """
+    for col in range(missing_field_matrix.shape[1]):
+        tofill = np.median(x[:, col][~missing_field_matrix[:, col]])
+        x[:, col] = np.where(missing_field_matrix[:, col], tofill, x[:, col])
+    return x
+
 
 def build_poly(x, column_idx, degree):
     """polynomial basis functions for input data x, for j=1 up to j=degree."""
@@ -145,6 +181,20 @@ def build_poly(x, column_idx, degree):
         extensions.append(np.copy(extended_feature_matrix))
 
     return np.concatenate(extensions, 1)
+
+
+def build_pairwise(x, column_idx):
+    """build pairwise multiplyed features x"""
+    if x.ndim == 1:
+        x = x[:, np.newaxis]
+        
+    columns = np.copy(x[:, column_idx])
+    pairwise = []
+    for i in range(columns.shape[1] - 1):
+        for j in range(i + 1, columns.shape[1] - 1):
+            pairwise.append(columns[:, i] * columns[:, j])
+    pairwise = np.array(pairwise).T
+    return np.concatenate([np.copy(x), pairwise], 1)
 
 
 def apply_transformation(x, column_idx, transformation, column_to_index_mapping=None):
