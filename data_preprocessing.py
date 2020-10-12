@@ -135,16 +135,14 @@ def build_poly(x, degree):
     """polynomial basis functions for input data x, for j=1 up to j=degree."""
     if x.ndim == 1:
         x = x[:, np.newaxis]
-    extended_feature_matrix = np.copy(x)
 
+    extended_feature_matrix = np.copy(x)
+    extensions = [np.copy(extended_feature_matrix)]
     for i in range(1, degree):
         extended_feature_matrix = extended_feature_matrix * x
-        extended_feature_matrix = np.append(
-            x,
-            extended_feature_matrix, 
-            axis=1)
+        extensions.append(np.copy(extended_feature_matrix))
 
-    return extended_feature_matrix
+    return np.concatenate(extensions, 1)
 
 
 def apply_transformation(x, column_idx, transformation, column_to_index_mapping=None):
