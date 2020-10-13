@@ -166,6 +166,28 @@ def median_missing_values(x, missing_field_matrix):
         x[:, col] = np.where(missing_field_matrix[:, col], tofill, x[:, col])
     return x
 
+def onehot_missing_values(x, missing_field_matrix):
+    # TODO: return list of one hotted columns (required for the test submission)
+    """add onehot columns for each feature which indicates that there was nan value
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Ndarray whose missing fields are to be nulllified
+    missing_field_matrix : np.ndarray
+        Ndarray of bools of shape equal to the shape of x 
+        whose values corresponds to whether a field in the same position in x is missing
+    """
+    new_cols = []
+    for col in range(missing_field_matrix.shape[1]):
+        nan_col = np.sum(missing_field_matrix[:, col]) > 0
+        if nan_col:
+            new_col = np.zeros_like(x[:, 0])
+            new_col[np.where(missing_field_matrix[:, col])] = 1
+            new_cols.append(new_col)
+    new_cols = np.array(new_cols).T
+    return np.concatenate((x, new_cols), 1)
+
 
 def build_poly(x, column_idx, degree):
     """polynomial basis functions for input data x, for j=1 up to j=degree."""
