@@ -7,7 +7,6 @@ def one_hot(x, depth=None):
     Note that number of classes does not depend on number of distinctive values,
         so it is recommended to map interval to [0, N] such that every value of 
         interval is present at least once before calling this function.
-
     Parameters
     ----------
     x : np.ndarray
@@ -27,6 +26,55 @@ def one_hot(x, depth=None):
     else:
         depth = max(min_depth, depth)
     return np.eye(depth)[x]
+
+def one_hot_(x, column_to_index_mapping, column_name, depth=None):
+    """Transforms input into one hot format.
+    All values of the input array are expected to be >= 0.
+    Note that number of classes does not depend on number of distinctive values,
+        so it is recommended to map interval to [0, N] such that every value of 
+        interval is present at least once before calling this function.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Either 1D or (N, 1) array of positive integers
+    depth : int or None
+        Indicates minimal number of classes. 
+            If value is None, the number of classes will be equal to the value of maximum element of x + 1.
+            Otherwise it will be maximum between the value of maximum element of x + 1 and depth
+    """
+    if type(x) != np.int32:
+        x = x.astype(np.int32)
+    if x.ndim == 2:
+        x = x[:, 0]
+    min_depth = np.max(x) + 1
+    if depth == None:
+        depth = min_depth
+    else:
+        depth = max(min_depth, depth)
+    
+    column_to_index_mapping_upd = {}
+    for k, v in column_to_index_mapping.items():
+        if v > column_to_index_mapping[column_name]:
+            column_to_index_mapping_upd[k] = v - 1
+        elif v < column_to_index_mapping[column_name]:
+            column_to_index_mapping_upd[k] = v
+    
+    for d in range(depth):
+        column_to_index_mapping_upd[column_name + '_' + str(d)] = len(column_to_index_mapping_upd)
+    return np.eye(depth)[x], column_to_index_mapping_upd
+
+
+def one_hot_transformation(x, column_name, column_to_index_mapping):
+    column_idx = column_to_index_mapping[column_name]
+    columns = x[:, column_idx]
+    new_columns, column_to_index_mapping_upd = one_hot_(columns, column_to_index_mapping, column_name)
+    if columns.shape != new_columns.shape:
+        x_without_columns = np.delete(x, column_idx, axis=1)
+        x = np.append(x_without_columns, new_columns, axis=1)
+    else:
+        x[:, column_idx] = new_columns
+    return x, column_to_index_mapping_upd
 
 
 # TODO: Implement more efficient way to do mapping if this proves too slow
@@ -166,7 +214,7 @@ def median_missing_values(x, missing_field_matrix):
         x[:, col] = np.where(missing_field_matrix[:, col], tofill, x[:, col])
     return x
 
-def onehot_missing_values(x, missing_field_matrix):
+def onehot_missing_values(x, missing_field_matrix, col_to_index_mapping):
     # TODO: return list of one hotted columns (required for the test submission)
     """add onehot columns for each feature which indicates that there was nan value
 
@@ -178,6 +226,8 @@ def onehot_missing_values(x, missing_field_matrix):
         Ndarray of bools of shape equal to the shape of x 
         whose values corresponds to whether a field in the same position in x is missing
     """
+    col_to_index_mapping_inverse = {v: k for k, v in col_to_index_mapping.items()}
+    
     new_cols = []
     for col in range(missing_field_matrix.shape[1]):
         nan_col = np.sum(missing_field_matrix[:, col]) > 0
@@ -185,8 +235,40 @@ def onehot_missing_values(x, missing_field_matrix):
             new_col = np.zeros_like(x[:, 0])
             new_col[np.where(missing_field_matrix[:, col])] = 1
             new_cols.append(new_col)
+            
+            col_name = col_to_index_mapping_inverse[col]
+            col_to_index_mapping[col_name + '_isnan'] = len(col_to_index_mapping)
     new_cols = np.array(new_cols).T
-    return np.concatenate((x, new_cols), 1)
+    return np.concatenate((x, new_cols), 1), col_to_index_mapping
+
+# def onehot_missing_values_transform(x, missing_field_matrix, col_to_index_mapping):
+#     # TODO: return list of one hotted columns (required for the test submission)
+#     """add onehot columns for each feature which indicates that there was nan value
+
+#     Parameters
+#     ----------
+#     x : np.ndarray
+#         Ndarray whose missing fields are to be nulllified
+#     missing_field_matrix : np.ndarray
+#         Ndarray of bools of shape equal to the shape of x 
+#         whose values corresponds to whether a field in the same position in x is missing
+#     """
+#     name_set = set()
+#     for k in col_to_index_mapping.keys():
+#         if 'nan' in k:
+#             name_set.update(k[:-6])
+        
+#     new_cols = []
+#     for name in name_set:
+#         col = col_to_index_mapping[name]
+#         new_col = np.zeros_like(x[:, 0])
+#         new_col[np.where(missing_field_matrix[:, col])] = 1
+#         new_cols.append(new_col)
+
+#         col_name = col_to_index_mapping_inverse[col]
+#         col_to_index_mapping[col_name + '_isnan'] = len(col_to_index_mapping)
+#     new_cols = np.array(new_cols).T
+#     return np.concatenate((x, new_cols), 1), col_to_index_mapping
 
 
 def build_poly(x, column_idx, degree):
