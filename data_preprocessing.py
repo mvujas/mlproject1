@@ -276,15 +276,17 @@ def build_poly(x, column_idx, degree):
     if x.ndim == 1:
         x = x[:, np.newaxis]
         
+    if isinstance(degree, int):
+        degree = list(range(1, degree + 1))
+
     columns = x[:, column_idx]
+    column_len = columns.shape[1]
 
-    extended_feature_matrix = np.copy(columns)
-    extensions = [np.copy(x)]
-    for i in range(1, degree):
-        extended_feature_matrix = extended_feature_matrix * columns
-        extensions.append(np.copy(extended_feature_matrix))
+    result = np.empty((columns.shape[0], columns.shape[1] * len(degree)), dtype=float)
+    for degree_ind, degree_val in enumerate(degree):
+        result[:, degree_ind * column_len:(degree_ind + 1) * column_len] = columns ** degree_val
 
-    return np.concatenate(extensions, 1)
+    return result
 
 
 def build_pairwise(x, column_idx):
