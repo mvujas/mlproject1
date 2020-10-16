@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.special import expit
 
 
 class MeanSquaredError:
@@ -193,6 +192,9 @@ def ridge_regression(y, tx, lambda_):
     loss = mse + lambda_ * np.sum(weights ** 2)
     return (weights, loss)
 
+
+def expit(x):
+     return 1/(1 + np.exp(-x))
 
 def logistic_regression_grad(y, tx, weights):
     p = expit(tx @ weights)
