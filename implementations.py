@@ -194,7 +194,11 @@ def ridge_regression(y, tx, lambda_):
 
 
 def expit(x):
-     return 1/(1 + np.exp(-x))
+     exp_x = np.exp(x)
+     return np.where(x >= 0, 
+                    1 / (1 + np.exp(-x)), 
+                    exp_x / (1 + exp_x))
+
 
 def logistic_regression_grad(y, tx, weights):
     p = expit(tx @ weights)
