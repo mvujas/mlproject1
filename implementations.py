@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 
 class MeanSquaredError:
@@ -194,9 +195,9 @@ def ridge_regression(y, tx, lambda_):
 
 
 def expit(x):
-     exp_x = np.exp(x)
-     return np.where(x >= 0, 
-                    1 / (1 + np.exp(-x)), 
+    exp_x = np.exp(x)
+    return np.where(x >= 0,
+                    1 / (1 + np.exp(-x)),
                     exp_x / (1 + exp_x))
 
 
@@ -206,9 +207,13 @@ def logistic_regression_grad(y, tx, weights):
     return g.mean(0)
 
 
+def softplus(x):
+    return np.where(x >= 30, x, np.log1p(np.exp(x)))
+
+
 def logistic_regression_loss(y, tx, weights):
     t = 2 * y - 1
-    loss = np.log1p(np.exp(-t * (tx @ weights)))
+    loss = softplus(-t * (tx @ weights))
     return loss.mean()
 
 
@@ -363,7 +368,10 @@ def reg_logistic_regression_sgd(y, tx, lambda_, initial_w, n_epochs, batch_size,
 
         loss_h.append(logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights)
 
-    return (weights, loss_h if history else loss_h[-1])
+    if 1e-3 > 1 - loss_h[-1] / loss_h[-2] > 0:
+        warnings.warn("Logistic regression didn't converge!")
+
+    return (weights, np.array(loss_h) if history else loss_h[-1])
 
 
 def lasso_logistic_regression_sgd(y, tx, lambda_, initial_w, n_epochs, batch_size, gamma, history=False):
