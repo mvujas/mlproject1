@@ -368,7 +368,7 @@ def reg_logistic_regression_sgd(y, tx, lambda_, initial_w, n_epochs, batch_size,
 
         loss_h.append(logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights)
 
-    if 1e-3 > 1 - loss_h[-1] / loss_h[-2] > 0:
+    if not (1e-3 > 1 - loss_h[-1] / loss_h[-2] > 0):
         warnings.warn("Logistic regression didn't converge!")
 
     return (weights, np.array(loss_h) if history else loss_h[-1])
