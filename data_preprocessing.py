@@ -216,6 +216,7 @@ def median_missing_values(x, missing_field_matrix):
 
 def onehot_missing_values(x, missing_field_matrix, col_to_index_mapping):
     # TODO: return list of one hotted columns (required for the test submission)
+    # REMARK: add col_to_index_mapping into documentation and why it is even used in this function ?!
     """add onehot columns for each feature which indicates that there was nan value
 
     Parameters
@@ -241,6 +242,8 @@ def onehot_missing_values(x, missing_field_matrix, col_to_index_mapping):
     new_cols = np.array(new_cols).T
     return np.concatenate((x, new_cols), 1), col_to_index_mapping
 
+
+# DELETE IF NOT NEEDED
 # def onehot_missing_values_transform(x, missing_field_matrix, col_to_index_mapping):
 #     # TODO: return list of one hotted columns (required for the test submission)
 #     """add onehot columns for each feature which indicates that there was nan value
@@ -272,7 +275,21 @@ def onehot_missing_values(x, missing_field_matrix, col_to_index_mapping):
 
 
 def build_poly(x, column_idx, degree):
-    """polynomial basis functions for input data x, for j=1 up to j=degree."""
+    """Takes the given columns from the features matrix and builds polynomial basis functions out of them.
+        Degree is specified by a parameter degree which can either be a positive integer of an iterable structure of positive integers.
+        If it is an iterable structure the resulting polymial will only have degrees of the specified columns given in the structure.
+        If degree is a positive integer the polynomial will take all degrees from 1 to the given positive integer.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Features
+    column_idx : [int]
+        Columns from the feature matrix to be augmented 
+    degree : int or iterable of int
+        Degrees the polynoms should contain (if it is an iterable it will take only 
+        degrees from it; while if it is an int it will take degree from 1 to the given int)
+    """
     if x.ndim == 1:
         x = x[:, np.newaxis]
         
@@ -290,7 +307,16 @@ def build_poly(x, column_idx, degree):
 
 
 def build_pairwise(x, column_idx):
-    """build pairwise multiplyed features x"""
+    """Takes specified columns from the given matrix and multiply each 2 with each other.
+        The result is the original matrix together with the given columns multiplied with each other as new columns.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        2D matrix
+    column_idx : [int]
+        Indexes of columns of x that should be multiplied with each other
+    """
     if x.ndim == 1:
         x = x[:, np.newaxis]
         
@@ -304,6 +330,30 @@ def build_pairwise(x, column_idx):
 
 
 def apply_transformation(x, column_idx, transformation, column_to_index_mapping=None):
+    """Takes column with specified indexes from the given matrix, applies transformation
+        function on them and return them on their old places if no additional columns are
+        added after applying the transformation function, otherwise appends them as
+        new columns at the end of the matrix while deleting the original columns.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        2D Matrix
+    column_idx : [int] 
+        Indexes of columns of x that should be transformed
+    transformation : np.ndarray -> np.ndarray
+        A function that transforms the specified columns of x
+    column_to_index_mapping : {str : int}
+        A dictionary that maps column names to indexes.
+        As some columns might be moved to the end after applying the transformation 
+        function, it is important to update the mappings for columns whose mapping is 
+        affected by applying the transformation function (it is supposed that if
+        a transformation result of the column is pushed at the end it can't be kept
+        track of anymore, so their mappings are updated and programmer is 
+        expected to ignore mappings of these columns if this occurs [programmer is 
+        supposed to know whether the transformation function will introduce new columns]) 
+        The given parameter is treated as a mutable object.
+    """
     columns = x[:, column_idx]
     new_columns = transformation(columns)
     if columns.shape != new_columns.shape:
