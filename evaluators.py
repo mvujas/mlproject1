@@ -5,8 +5,8 @@ import numpy as np
 
 def cross_validation_evaluator(train_model, 
         cross_validation_score_reducer, number_of_folds=10):
-    """Evaluation function that performs cross validation on the given model and
-        uses the given reduction function to map the result of cross validation (accuracy, F_1 score for fold)
+    """Returns evaluation function that performs cross validation on the given model and
+        uses the given reduction function to map the result of cross validation (accuracy, F_1 score arrays)
         to a number.
 
     Parameters
