@@ -188,13 +188,17 @@ def ridge_regression(y, tx, lambda_):
     a = tx.T @ tx + lambda_prim * np.eye(D)
     b = tx.T @ y
     weights = np.linalg.solve(a, b)
-    # Calculate loss
-    mse = MeanSquaredError.calculate(y, tx, weights)
-    loss = mse + lambda_ * np.sum(weights ** 2)
+    # Calculate loss (regularization is 
+    #     excluded from loss, as it's purpose is for training)
+    loss = MeanSquaredError.calculate(y, tx, weights)
     return (weights, loss)
 
 
 def expit(x):
+    """Implements sigmoid function that should not produce overflows.
+          However, numpy may return warning that this is happening as the function
+          is not lazy, but this warning is a false alarm.
+    """
     exp_x = np.exp(x)
     return np.where(x >= 0,
                     1 / (1 + np.exp(-x)),
@@ -202,16 +206,39 @@ def expit(x):
 
 
 def logistic_regression_grad(y, tx, weights):
+    """Calculates gradient of logistic regression
+
+    Parameters
+    ----------
+    y : np.ndarray
+          Labels 
+    tx : np.ndarray
+          Features
+    weights : np.ndarray
+          Parameters of logistic regression model
+    """
     p = expit(tx @ weights)
     g = (p - y)[:, None] * tx
     return g.mean(0)
 
 
 def softplus(x):
+    """Softplus function with stability optimization"""
     return np.where(x >= 30, x, np.log1p(np.exp(x)))
 
 
 def logistic_regression_loss(y, tx, weights):
+    """Calculates loss of logistic regression
+
+    Parameters
+    ----------
+    y : np.ndarray
+          Labels 
+    tx : np.ndarray
+          Features
+    weights : np.ndarray
+          Parameters of logistic regression model
+    """
     t = 2 * y - 1
     loss = softplus(-t * (tx @ weights))
     return loss.mean()
@@ -282,8 +309,9 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         # make a GD step
         weights -= gamma * g
 
-    # calculate loss
-    loss = logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights
+    # calculate loss (regularization part is excluded from 
+    #     loss as it's purpose is mainly for training)
+    loss = logistic_regression_loss(y, tx, weights)
 
     return (weights, loss)
 
@@ -323,14 +351,14 @@ def reg_logistic_regression_history(y, tx, lambda_, initial_w, max_iters, gamma)
         # make a GD step
         weights -= gamma * g
 
-        loss_h.append(logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights)
+        loss_h.append(logistic_regression_loss(y, tx, weights))
 
     return (weights, loss_h)
 
 
 def reg_logistic_regression_sgd(y, tx, lambda_, initial_w, n_epochs, batch_size, gamma, history=False):
     """...
-    Train weights minimizing logistic loss function with L2 regularizer using GD:
+    Train weights minimizing logistic loss function with L2 regularizer using SGD:
     L(w) = 1/N \sum_{i=1}^N [y_i \log s(tx_i^T w) + (1 - y_i) \log(1 - s(tx_i^T w))] + lambda_ * w^Tw -> min_w
 
     Returns tuple (parameters, loss)
@@ -366,7 +394,7 @@ def reg_logistic_regression_sgd(y, tx, lambda_, initial_w, n_epochs, batch_size,
             # make a GD step
             weights -= gamma * g
 
-        loss_h.append(logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights)
+        loss_h.append(logistic_regression_loss(y, tx, weights))
 
     if not (1e-3 > 1 - loss_h[-1] / loss_h[-2] > 0):
         warnings.warn("Logistic regression didn't converge!")
@@ -412,6 +440,6 @@ def lasso_logistic_regression_sgd(y, tx, lambda_, initial_w, n_epochs, batch_siz
             # make a GD step
             weights -= gamma * g
 
-        loss_h.append(logistic_regression_loss(y, tx, weights) + lambda_ * np.sum(np.abs(weights)))
+        loss_h.append(logistic_regression_loss(y, tx, weights))
 
     return (weights, loss_h if history else loss_h[-1])
