@@ -329,6 +329,98 @@ def build_pairwise(x, column_idx):
     return np.concatenate([np.copy(x), pairwise], 1)
 
 
+def __two_combinations(n):
+        """A helper function that calculates the number of possible combinations 
+            with two elements over a set with n elements.
+        """
+        return n * (n - 1) // 2
+
+
+def build_pairwise_alt(x, column_idx):
+    """Takes specified columns from the given matrix and multiply each 2 with each other.
+        The result is the original matrix together with the given columns multiplied with each other as new columns.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        2D matrix
+    column_idx : [int]
+        Indexes of columns of x that should be multiplied with each other
+    """
+    if x.ndim == 1:
+        x = x[:, np.newaxis]
+
+    columns_num = len(column_idx)
+    columns = x[:, column_idx]
+
+    D = x.shape[1] # total number of columns of x
+    new_columns = __two_combinations(columns_num)
+
+    result = np.empty((x.shape[0], new_columns + D), dtype=x.dtype)
+    result[:, :D] = x # First few columns are original values of x
+
+    index_counter = 0
+    for i in range(columns_num - 1):
+        for j in range(i + 1, columns_num):
+            el_index = D + index_counter
+            result[:, el_index] = columns[:, i] * columns[:, j]
+            index_counter += 1
+
+    return result
+
+
+def build_pairwise_and_select_indexes(x, column_idx, selected_idx):
+    """Function that works similarly to build_pairwise, but only returns the result
+        elements that would end up on indexes specified with selected_idx. While this
+        may seem redundant (e.g. build_pairwise(x, column_idx)[:, selected_idx]) 
+        it is really helpful in order to avoid RAM shortage which happened during testing 
+        with really high number of columns (> 1500) as it is lazy and don't calculate
+        columns that are not needed.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        2D matrix
+    column_idx : [int]
+        Indexes of columns of x that should be multiplied with each other
+    selected_idx : [int]
+        Indexes of columns of result that should be selected
+    """
+    if x.ndim == 1:
+        x = x[:, np.newaxis]
+
+    selected_idx = sorted(list(set(selected_idx)))
+
+    columns_num = len(column_idx)
+    columns = x[:, column_idx]
+
+    D = x.shape[1] # total number of columns of x
+
+    num_selected_idx = len(selected_idx)
+    result = np.empty((x.shape[0], num_selected_idx), dtype=x.dtype)
+
+    selected_idx_from_x = list(filter(lambda n: n < D, selected_idx))
+    result[:, :len(selected_idx_from_x)] = x[:, selected_idx_from_x] # First few columns are original values of x
+
+    current_selected_idx_index = len(selected_idx_from_x)
+    
+    index_counter = D
+    selected_all_indexes = False
+    for i in range(columns_num - 1):
+        if selected_all_indexes:
+            break
+        for j in range(i + 1, columns_num):
+            el_index = index_counter
+            if selected_idx[current_selected_idx_index] == el_index:
+                result[:, current_selected_idx_index] = columns[:, i] * columns[:, j]
+                current_selected_idx_index += 1
+                selected_all_indexes = current_selected_idx_index >= num_selected_idx
+                if selected_all_indexes:
+                    break
+            index_counter += 1
+    
+    return result
+
 def apply_transformation(x, column_idx, transformation, column_to_index_mapping=None):
     """Takes column with specified indexes from the given matrix, applies transformation
         function on them and return them on their old places if no additional columns are
