@@ -369,15 +369,17 @@ def reg_logistic_regression_sgd(y, tx, lambda_, initial_w, n_epochs, batch_size,
          Trade-off parameter
     initial_w : numpy.ndarray
          Initial parameters of the model
-    max_iters : int
+    n_epochs : int
         number of passes over the data
+    batch_size : int
+        number of instances in each batch
     gamma : float
          Learning rate
     history : bool
          return weights history if set to True
     """
     weights = initial_w
-    loss_h = [logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights]
+    loss_h = [logistic_regression_loss(y, tx, weights)]
 
     for iteration in range(n_epochs):
         # Stochastic Gradient Descent step
@@ -415,15 +417,17 @@ def lasso_logistic_regression_sgd(y, tx, lambda_, initial_w, n_epochs, batch_siz
          Trade-off parameter
     initial_w : numpy.ndarray
          Initial parameters of the model
-    max_iters : int
+    n_epochs : int
         number of passes over the data
+    batch_size : int
+        number of instances in each batch
     gamma : float
          Learning rate
     history : bool
          return weights history if set to True
     """
     weights = initial_w
-    loss_h = [logistic_regression_loss(y, tx, weights) + lambda_ * np.sum(np.abs(weights))]
+    loss_h = [logistic_regression_loss(y, tx, weights)]
 
     for iteration in range(n_epochs):
         # Stochastic Gradient Descent step
