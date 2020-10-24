@@ -337,7 +337,7 @@ def reg_logistic_regression_history(y, tx, lambda_, initial_w, max_iters, gamma)
          return weights history if set to True
     """
     weights = initial_w
-    loss_h = [logistic_regression_loss(y, tx, weights) + lambda_ * weights @ weights]
+    loss_h = [logistic_regression_loss(y, tx, weights)]
 
     for i in range(max_iters):
         # calculate gradient
