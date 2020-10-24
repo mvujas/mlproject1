@@ -82,8 +82,6 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
         yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
 
 
-# TODO : all functions should return (w, loss) pair
-
 def least_squares(y, tx):
     """Calculates the least squares solution using normal equations.
     Returns tuple (parameters, loss)
@@ -130,10 +128,8 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     loss = MeanSquaredError.calculate(y, tx, weights)
     return (weights, loss)
 
-# KEEP IN MIND: Optinal arguments might have to be removed
-#    as they are not in the description of the project.
-#    Therefore use of them is discouraged :(
-def least_squares_SGD(y, tx, initial_w, max_iters, gamma, batch_size=32, num_batches=1):
+
+def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     """Calculates the least squares solution using stochastic gradient descent.
     Returns tuple (parameters, loss)
 
@@ -159,7 +155,7 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma, batch_size=32, num_bat
     # TODO: max_iters defines number of steps, not epochs
     for iteration in range(max_iters):
         # Stochastic Gradient Descent step
-        batches = batch_iter(y, tx, batch_size=batch_size, num_batches=num_batches)
+        batches = batch_iter(y, tx, batch_size=1, num_batches=1)
         for y_batch, tx_batch in batches:
             gradient = MeanSquaredError.gradient(y_batch, tx_batch, weights)
             weights = weights - gamma * gradient
