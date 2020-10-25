@@ -21,5 +21,5 @@ Pretty late into experimenting with big number of augmented features we noticed 
 ## Authors
 
 * Andrei Atanov
-* Valentina Shumovskaya
+* Valentina Šumovskaya
 * Miloš Vujasinović
