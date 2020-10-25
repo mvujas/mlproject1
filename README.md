@@ -28,7 +28,7 @@ Features are augmented and modified by applying different functions in the follo
 
 The model is obtained by applying regularized logistic regression on the preprocessed features and trained using mini batch gradient descent.
 
-The model achieves mean accuracy 1, F1-score 2 on the training set using 5-fold cross validation and mean accuracy 0.84, mean F1 score 0.759 on the test set for the values of training parameters and hyperparameters:
+The model achieves mean accuracy 0.842, F1-score 0.76 on the training set using 5-fold cross validation and mean accuracy 0.84, mean F1 score 0.759 on the test set for the values of training parameters and hyperparameters:
 
 * Trade-off parameter: 10^(-9)
 * Learning rate: 0.04
