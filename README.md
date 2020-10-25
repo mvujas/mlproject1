@@ -17,7 +17,7 @@ Features are augmented and modified by applying different functions in the follo
 1. numeric features are standardized
 2. added one hot encoding for the single nominal feature (3 new features created, the initial dropped)
 3. missing columns replaced with the mean of the values in the given column (as all the missing are numeric features, missing columns are set to 0 which is the mean after applying standardization)
-4. $\sin$ and $\cos$ applied on all the columns obtained after step 3, the new columns are added beside the already existing ones
+4. Sin and cos function applied on all the columns obtained after step 3, the new columns are added beside the already existing ones
 5. Top 54 features obtained after step 4 selected (Selection done using backward attribute selection and evaluated using $10$-fold cross validation on logistic regression)
 6. Features obtained after step 5 are multiplied with each other and the result is added beside the original features after step 5
 7. Polynomial degrees 2 and 3 of features obtained after step 5 are added beside the features obtained after step 6
@@ -28,10 +28,10 @@ Features are augmented and modified by applying different functions in the follo
 
 The model is obtained by applying regularized logistic regression on the preprocessed features and trained using mini batch gradient descent.
 
-The model achieves mean accuracy $1$, $F_1$-score $2$ on the training set using 5-fold cross validation and mean accuracy $0.84$, mean $F_1$ score $0.759$ on the test set for the values of training parameters and hyperparameters:
+The model achieves mean accuracy 1, F1-score 2 on the training set using 5-fold cross validation and mean accuracy 0.84, mean F1 score 0.759 on the test set for the values of training parameters and hyperparameters:
 
-* Trade-off parameter: $\lambda = 10^{-9}$
-* Learning rate: $\gamma = 0.04$
+* Trade-off parameter: 10^(-9)
+* Learning rate: 0.04
 * Batch size: 2000
 * Number of epochs: 400
 
