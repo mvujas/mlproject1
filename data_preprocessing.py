@@ -77,7 +77,6 @@ def one_hot_transformation(x, column_name, column_to_index_mapping):
     return x, column_to_index_mapping_upd
 
 
-# TODO: Implement more efficient way to do mapping if this proves too slow
 def map_values(x, mapping, default=0):
     """Maps values from the given array using mapping rules given in the dictionary
         
@@ -216,7 +215,6 @@ def median_missing_values(x, missing_field_matrix):
 
 def onehot_missing_values(x, missing_field_matrix, col_to_index_mapping):
     # TODO: return list of one hotted columns (required for the test submission)
-    # REMARK: add col_to_index_mapping into documentation and why it is even used in this function ?!
     """add onehot columns for each feature which indicates that there was nan value
 
     Parameters
