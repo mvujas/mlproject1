@@ -100,7 +100,7 @@ def map_values(x, mapping, default=0):
 def standardize(x):
     """Standardizes values of each column in the given matrix (2D array)
 
-    Parameters# TODO: Implement more efficient way to do mapping if this proves too slow
+    Parameters
 
     ----------
     x : np.ndarray
