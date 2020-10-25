@@ -482,17 +482,19 @@ def shuffle_samples(y, x):
     return shuffled_y, shuffled_x
 
 
-def stratify_sampling(y, x, number_of_folds, shuffle=False):
+def stratify_sampling(y, number_of_folds, shuffle=False):
     """Splits data points in folds of relatively equal size 
         (can sligtly differ if number of data points is not dividable by number of folds)
-        such that each fold has equal number of instances of same class
+        such that each fold has equal number of instances of same class.
+        Indexes of instances in each fold are return as it seems to be the
+        most memory efficient way. 
+        It returns value in form of list of numpy arrays where each array contain
+        indexes of instances in the given fold.
 
     Parameters
     ----------
     y : np.ndarray
         Labels
-    x : np.ndarray
-        Features
     number_of_folds : int
         Number of folds data point should be split into
     shuffle : bool
@@ -517,27 +519,27 @@ def stratify_sampling(y, x, number_of_folds, shuffle=False):
             folds.append(last)
         return folds
 
-    if shuffle:
-        y, x = shuffle_samples(y, x)
-
     classes = np.unique(y)
     # Divide indexes of instances of each class in respective arrays
-    class_idx = [np.where(y == class_val) for class_val in classes]
+    class_idx = [np.where(y == class_val)[0] for class_val in classes]
+    
+    if shuffle:
+        for i in range(len(class_idx)):
+            current_class_idx = class_idx[i]
+            class_idx[i] = current_class_idx[np.random.permutation(np.arange(current_class_idx.shape[0]))]
+    
     class_idx_fold = []
     for single_class_idx in class_idx:
         # For each class split their indexes into smaller folds
-        idx = single_class_idx[0]
+        idx = single_class_idx
         fold_slices = sizes_of_folds(idx.size, number_of_folds)
         idx_folds = np.split(idx, fold_slices)
         class_idx_fold.append(idx_folds)
 
-    y_folds = []
-    x_folds = []
+
+    fold_idx = []
     for i in range(number_of_folds):
         # Take instances of each class
-        new_x_fold = np.concatenate([x[class_folds[i]] for class_folds in class_idx_fold])
-        new_y_fold = np.concatenate([y[class_folds[i]] for class_folds in class_idx_fold])
-        x_folds.append(new_x_fold)
-        y_folds.append(new_y_fold)
+        fold_idx.append(np.concatenate([class_folds[i] for class_folds in class_idx_fold]))
 
-    return y_folds, x_folds
+    return fold_idx

@@ -6,6 +6,7 @@ def cross_validation(y, x, train_model, number_of_folds, verbose=False):
     """Implements k-fold cross validation.
         The result of the function is a 2 element tuple whose first element is array of 
         acurracies for each step while the second is array of f1-scores for each step.
+        It performes stratification before splitting data into subsets.
 
     Parameters
     ----------
@@ -22,14 +23,17 @@ def cross_validation(y, x, train_model, number_of_folds, verbose=False):
         Indicate whether results should be summarized in the human readable form
         at the end of the function
     """
-    y_folds, x_folds = stratify_sampling(y, x, number_of_folds)
+    stratified_idx = stratify_sampling(y, number_of_folds, True)
     accuracies = np.zeros((number_of_folds,))
     fbeta_scores = np.zeros((number_of_folds,))
     for i in range(number_of_folds):
-        y_test = y_folds.pop(0)
-        x_test = x_folds.pop(0)
-        y_train = np.concatenate(y_folds)
-        x_train = np.concatenate(x_folds)
+        training_instances = np.concatenate(
+            list(map(lambda x: x[1], filter(lambda x: x[0] != 1, enumerate(stratified_idx))))    )
+        
+        y_train = y[training_instances]
+        x_train = x[training_instances]
+        y_test = y[stratified_idx[i]]
+        x_test = x[stratified_idx[i]]
 
         model = train_model(y_train, x_train)
         predictions = model(x_test)
@@ -38,9 +42,6 @@ def cross_validation(y, x, train_model, number_of_folds, verbose=False):
         f_score = metrics.fbeta_score(y_test, predictions)
         accuracies[i] = acc
         fbeta_scores[i] = f_score
-
-        y_folds.append(y_test)
-        x_folds.append(x_test)
 
     if verbose:
         def print_metric_stats(metric_name, metric_values):
