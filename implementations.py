@@ -145,10 +145,6 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
          Maximum number of iterations
     gamma : float
          Learning rate
-    batch_size : int
-          Number of datapoints in each batch
-    num_batches : int
-          Number of batches per each iteration of SGD algorithm
     """
     weights = initial_w
 
@@ -243,7 +239,7 @@ def logistic_regression_loss(y, tx, weights):
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """...
     Train weights minimizing logistic loss function using GD:
-    L(w) = 1/N \sum_{i=1}^N [y_i \log s(tx_i^T w) + (1 - y_i) \log(1 - s(tx_i^T w))] -> min_w
+    L(w) = \sum_{i=1}^N [y_i \log s(tx_i^T w) + (1 - y_i) \log(1 - s(tx_i^T w))] -> min_w
 
     Returns tuple (parameters, loss)
 
@@ -264,17 +260,17 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     weights = initial_w
     for i in range(max_iters):
         # calculate gradient
-        g = logistic_regression_grad(y, tx, weights)
+        g = logistic_regression_grad(y, tx, weights) * tx.shape[0]
         # make a GD step
         weights -= gamma * g
     # Calculate loss
-    loss = logistic_regression_loss(y, tx, weights)
+    loss = logistic_regression_loss(y, tx, weights) * tx.shape[0]
     return (weights, loss)
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """...
     Train weights minimizing logistic loss function with L2 regularizer using GD:
-    L(w) = 1/N \sum_{i=1}^N [y_i \log s(tx_i^T w) + (1 - y_i) \log(1 - s(tx_i^T w))] + lambda_ * w^Tw -> min_w
+    L(w) = \sum_{i=1}^N [y_i \log s(tx_i^T w) + (1 - y_i) \log(1 - s(tx_i^T w))] + .5 * lambda_ * w^Tw -> min_w
 
     Returns tuple (parameters, loss)
 
@@ -292,22 +288,20 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
          Maximum number of iterations
     gamma : float
          Learning rate
-    history : bool
-         return weights history if set to True
     """
     weights = initial_w
 
     for i in range(max_iters):
         # calculate gradient
-        g = logistic_regression_grad(y, tx, weights)
+        g = logistic_regression_grad(y, tx, weights) * tx.shape[0]
         # add L2 regularizer gradient (lambda_ * w^Tw)
-        g += 2 * lambda_ * weights
+        g += lambda_ * weights
         # make a GD step
         weights -= gamma * g
 
     # calculate loss (regularization part is excluded from 
     #     loss as it's purpose is mainly for training)
-    loss = logistic_regression_loss(y, tx, weights)
+    loss = logistic_regression_loss(y, tx, weights) * tx.shape[0]
 
     return (weights, loss)
 
@@ -333,8 +327,6 @@ def reg_logistic_regression_history(y, tx, lambda_, initial_w, max_iters, gamma)
          Maximum number of iterations
     gamma : float
          Learning rate
-    history : bool
-         return weights history if set to True
     """
     weights = initial_w
     loss_h = [logistic_regression_loss(y, tx, weights)]
