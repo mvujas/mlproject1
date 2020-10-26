@@ -20,6 +20,6 @@ def verify(*filenames):
     i += 1
   return all_same
 
-files_same = verify('submission.csv', 'submission_123.csv')
+files_same = verify('submissions/final_submission.csv', 'submission.csv')
 
 print('Files ' + ('are' if files_same else 'are not') + ' same')
