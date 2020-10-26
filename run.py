@@ -115,7 +115,9 @@ def train_model(y, x):
   return make_predictor(weights)
 
 
+# Ensure same random number sequence
 np.random.seed(21368342)
+
 # Preprocess training data
 tx_train_2, transformation_memory = transformation_pipeline(x_train)
 
