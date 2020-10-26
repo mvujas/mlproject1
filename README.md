@@ -4,7 +4,7 @@ The code of the project of team 'answer42' for [EPFL Machine Learning Higgs](htt
 
 ## Software requirements
 
-* Python version: TO BE ADDED
+* Python version: 3.6.9
 
 _Disclaimer_: The requirements aren't strict, but are recommended as all the code was tested using them
 
