@@ -22,7 +22,6 @@ col_to_index_mapping = {col_name: index - 2 for index, col_name in enumerate(col
 # Transforming labels from {-1, 1} to {0, 1}
 y_train = (y_train + 1) // 2
 
-
 # Function for data preprocessing
 def transformation_pipeline(x, col_to_index_mapping=col_to_index_mapping, transformation_memory=None):
     # Memory is required in order to apply same transformation on training and test data
@@ -116,6 +115,7 @@ def train_model(y, x):
   return make_predictor(weights)
 
 
+np.random.seed(21368342)
 # Preprocess training data
 tx_train_2, transformation_memory = transformation_pipeline(x_train)
 
@@ -160,4 +160,4 @@ collected_predictions = collected_predictions * 2 - 1
 assert(collected_predictions.shape[0] == x_test.shape[0])
 
 # Creating submission
-data_io.create_csv_submission(ids_test, collected_predictions, f'{DATA_FILE_PREFIX}submission.csv')
+data_io.create_csv_submission(ids_test, collected_predictions, 'submission.csv')
