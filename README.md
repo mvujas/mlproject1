@@ -14,9 +14,9 @@ There is no use of filtering of data samples.
 
 Features are augmented and modified by applying different functions in the following order:
 
-1. numeric features are standardized
-2. added one hot encoding for the single nominal feature (3 new features created, the initial dropped)
-3. missing columns replaced with the mean of the values in the given column (as all the missing are numeric features, missing columns are set to 0 which is the mean after applying standardization)
+1. Numeric features are standardized
+2. Added one hot encoding for the single nominal feature (3 new features created, the initial dropped)
+3. Missing columns replaced with the mean of the values in the given column (as all the missing are numeric features, missing columns are set to 0 which is the mean after applying standardization)
 4. Sin and cos function applied on all the columns obtained after step 3, the new columns are added beside the already existing ones
 5. Top 54 features obtained after step 4 selected (Selection done using backward attribute selection and evaluated using 10-fold cross validation on logistic regression)
 6. Features obtained after step 5 are multiplied with each other and the result is added beside the original features after step 5
