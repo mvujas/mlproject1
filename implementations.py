@@ -148,7 +148,6 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     """
     weights = initial_w
 
-    # TODO: max_iters defines number of steps, not epochs
     for iteration in range(max_iters):
         # Stochastic Gradient Descent step
         batches = batch_iter(y, tx, batch_size=1, num_batches=1)
