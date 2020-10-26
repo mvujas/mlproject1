@@ -13,6 +13,15 @@ from implementations import *
 # Constants
 DATA_FILE_PREFIX = 'data/'
 
+# Loading training data
+y_train, x_train, _, cols = data_io.load_csv_data(f'{DATA_FILE_PREFIX}train.csv')
+
+# Creating column name to index maping
+col_to_index_mapping = {col_name: index - 2 for index, col_name in enumerate(cols) if index >= 2}
+
+# Transforming labels from {-1, 1} to {0, 1}
+y_train = (y_train + 1) // 2
+
 
 # Function for data preprocessing
 def transformation_pipeline(x, col_to_index_mapping=col_to_index_mapping, transformation_memory=None):
@@ -107,15 +116,6 @@ def train_model(y, x):
   return make_predictor(weights)
 
 
-# Loading training data
-y_train, x_train, _, cols = data_io.load_csv_data(f'{DATA_FILE_PREFIX}train.csv')
-
-# Creating column name to index maping
-col_to_index_mapping = {col_name: index - 2 for index, col_name in enumerate(cols) if index >= 2}
-
-# Transforming labels from {-1, 1} to {0, 1}
-y_train = (y_train + 1) // 2
-
 # Preprocess training data
 tx_train_2, transformation_memory = transformation_pipeline(x_train)
 
@@ -153,5 +153,11 @@ while current_index <= x_test.shape[0]:
 # Collecting predictions for each batch into a single prediction array
 collected_predictions = np.concatenate(predictions_for_batches)
 
+# Map predictions from {0, 1} to {-1, 1}
+collected_predictions = collected_predictions * 2 - 1
+
+# Make sure you classified all test samples
+assert(collected_predictions.shape[0] == x_test.shape[0])
+
 # Creating submission
-data_io.create_csv_submission(ids_test, collected_predictions, 'submission.csv')
+data_io.create_csv_submission(ids_test, collected_predictions, f'{DATA_FILE_PREFIX}submission.csv')
